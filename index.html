@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ChronoPulse - Ultra Age Calculator Software</title>
+  
+  <!-- PWA Manifest & Theme -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#38bdf8">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+
+    :root {
+      --bg: #030712;
+      --card-bg: rgba(15, 23, 42, 0.85);
+      --accent-primary: #38bdf8;
+      --accent-secondary: #8b5cf6;
+      --accent-grad: linear-gradient(135deg, #38bdf8 0%, #8b5cf6 50%, #ec4899 100%);
+      --btn-grad: linear-gradient(90deg, #8b5cf6 0%, #38bdf8 100%);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: rgba(255, 255, 255, 0.08);
+      --glow: rgba(56, 189, 248, 0.2);
+    }
+
+    body.theme-cyan { --accent-primary: #38bdf8; --accent-secondary: #8b5cf6; --btn-grad: linear-gradient(90deg, #8b5cf6, #38bdf8); --glow: rgba(56, 189, 248, 0.25); }
+    body.theme-emerald { --accent-primary: #10b981; --accent-secondary: #3b82f6; --btn-grad: linear-gradient(90deg, #3b82f6, #10b981); --glow: rgba(16, 185, 129, 0.25); }
+    body.theme-pink { --accent-primary: #ec4899; --accent-secondary: #8b5cf6; --btn-grad: linear-gradient(90deg, #8b5cf6, #ec4899); --glow: rgba(236, 72, 153, 0.25); }
+    body.theme-gold { --accent-primary: #f59e0b; --accent-secondary: #ef4444; --btn-grad: linear-gradient(90deg, #ef4444, #f59e0b); --glow: rgba(245, 158, 11, 0.25); }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; user-select: none; }
+
+    body {
+      background-color: var(--bg);
+      background-image: 
+        radial-gradient(at 10% 10%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
+        radial-gradient(at 90% 90%, rgba(56, 189, 248, 0.15) 0px, transparent 50%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 12px;
+      transition: background 0.3s ease;
+    }
+
+    .app-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 24px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8), 0 0 30px var(--glow);
+    }
+
+    .top-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .theme-picker { display: flex; gap: 6px; }
+    .t-dot { width: 16px; height: 16px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(255,255,255,0.2); }
+    .t-dot.cyan { background: #38bdf8; }
+    .t-dot.emerald { background: #10b981; }
+    .t-dot.pink { background: #ec4899; }
+    .t-dot.gold { background: #f59e0b; }
+
+    .lang-toggle {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .header-box { text-align: center; margin-bottom: 16px; }
+    .badge {
+      display: inline-block;
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: var(--accent-primary);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      background: var(--accent-grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 4px;
+    }
+
+    p.subtitle { font-size: 0.78rem; color: var(--text-muted); }
+
+    .input-box {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 16px;
+    }
+
+    label { display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; }
+
+    input[type="datetime-local"] {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(3, 7, 18, 0.9);
+      color: var(--text);
+      font-size: 0.9rem;
+      outline: none;
+      color-scheme: dark;
+    }
+
+    .btn-calc {
+      width: 100%;
+      padding: 14px;
+      border-radius: 14px;
+      border: none;
+      background: var(--btn-grad);
+      color: white;
+      font-size: 0.95rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(56, 189, 248, 0.3);
+      transition: transform 0.2s;
+    }
+    .btn-calc:active { transform: scale(0.97); }
+
+    .error-msg {
+      color: #f43f5e;
+      font-size: 0.78rem;
+      text-align: center;
+      margin-top: 8px;
+      display: none;
+      font-weight: 600;
+    }
+
+    .results { margin-top: 18px; display: none; flex-direction: column; gap: 12px; }
+
+    .live-indicator {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 0.72rem;
+      color: #34d399;
+      font-weight: 600;
+    }
+
+    .dot { width: 7px; height: 7px; background-color: #34d399; border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center; }
+    .card-val { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 14px; padding: 12px 6px; }
+    .val-num { font-size: 1.4rem; font-weight: 800; color: var(--accent-primary); }
+    .val-lbl { font-size: 0.68rem; color: var(--text-muted); margin-top: 2px; font-weight: 600; }
+
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; text-align: center; }
+    .val-num-sub { font-size: 1rem; font-weight: 700; color: var(--accent-secondary); }
+
+    .tab-buttons { display: flex; gap: 4px; border-bottom: 1px solid var(--border); padding-bottom: 6px; overflow-x: auto; }
+    .tab-btn { flex: 1; background: transparent; border: none; color: var(--text-muted); padding: 6px 4px; font-size: 0.68rem; font-weight: 700; cursor: pointer; border-radius: 6px; white-space: nowrap; }
+    .tab-btn.active { background: rgba(56, 189, 248, 0.15); color: var(--accent-primary); border: 1px solid rgba(56, 189, 248, 0.3); }
+
+    .tab-content { display: none; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border); border-radius: 14px; padding: 12px; }
+    .tab-content.active { display: block; }
+
+    .info-row { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px dashed rgba(255,255,255,0.06); font-size: 0.78rem; }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { color: var(--text-muted); }
+    .info-value { font-weight: 700; color: var(--text); }
+
+    .btn-share {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.2s;
+    }
+    .btn-share:hover { background: rgba(255, 255, 255, 0.08); }
+
+    /* 💎 MODALS */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(3, 7, 18, 0.8);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      display: flex; justify-content: center; align-items: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease;
+      z-index: 9999;
+      padding: 16px;
+    }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    
+    .premium-photo-card {
+      width: 100%; max-width: 380px;
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      border-radius: 28px; padding: 24px;
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.9), 0 0 30px var(--glow);
+      text-align: center;
+      transform: scale(0.85); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .modal-overlay.active .premium-photo-card { transform: scale(1); }
+    
+    .card-icon-box {
+      width: 54px; height: 54px; margin: 0 auto 12px;
+      background: var(--btn-grad);
+      border-radius: 18px; display: flex; align-items: center; justify-content: center;
+      font-size: 22px; color: #fff; box-shadow: 0 10px 20px rgba(56, 189, 248, 0.4);
+    }
+    .card-modal-title { font-size: 17px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+    .card-modal-desc { font-size: 11px; color: var(--text-muted); line-height: 1.4; margin-bottom: 16px; }
+    
+    .card-spec-grid {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border);
+      border-radius: 14px; padding: 12px;
+      margin-bottom: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; text-align: left;
+    }
+    .spec-item .l { font-size: 9px; color: var(--text-muted); text-transform: uppercase; }
+    .spec-item .v { font-size: 11px; font-weight: 700; color: var(--accent-primary); }
+    
+    .btn-modal-main {
+      width: 100%; padding: 12px; border: none; border-radius: 12px;
+      background: var(--btn-grad); color: #fff; font-size: 12px; font-weight: 800;
+      cursor: pointer; box-shadow: 0 6px 15px rgba(56, 189, 248, 0.3); margin-bottom: 8px;
+    }
+    .btn-modal-close { background: transparent; border: none; color: var(--text-muted); font-size: 11px; font-weight: 600; cursor: pointer; }
+  </style>
+</head>
+<body class="theme-cyan">
+
+  <div class="app-card">
+    <div class="top-controls">
+      <div class="theme-picker">
+        <div class="t-dot cyan" onclick="setTheme('cyan')" title="Cyan Theme"></div>
+        <div class="t-dot emerald" onclick="setTheme('emerald')" title="Emerald Theme"></div>
+        <div class="t-dot pink" onclick="setTheme('pink')" title="Pink Theme"></div>
+        <div class="t-dot gold" onclick="setTheme('gold')" title="Gold Theme"></div>
+      </div>
+      <button class="lang-toggle" onclick="toggleLanguage()" id="langBtn">EN / বাংলা</button>
+    </div>
+
+    <div class="header-box">
+      <div class="badge" id="badgeText">PWA Offline Mode Active</div>
+      <h1 id="appTitle">ChronoPulse Matrix</h1>
+      <p class="subtitle" id="appSub">নিখুঁত লাইভ বয়স এবং জ্যোতির্বিজ্ঞানভিত্তিক বিশ্লেষণ</p>
+    </div>
+
+    <div class="input-box">
+      <label id="lblInput"><i class="fa-regular fa-calendar-days"></i> জন্ম তারিখ ও সময় দিন:</label>
+      <input type="datetime-local" id="dobInput">
+      <div class="error-msg" id="errorMsg">সঠিক জন্মতারিখ নির্বাচন করুন!</div>
+    </div>
+
+    <button class="btn-calc" onclick="runApp()"><i class="fa-solid fa-bolt"></i> <span id="btnText">হিসাব শুরু করুন</span></button>
+
+    <div class="results" id="resSection">
+      <div class="live-indicator">
+        <span><span class="dot"></span> <span id="liveText">রিয়েল-টাইম কাউন্টার চালু</span></span>
+        <span>অ্যাক্টিভ</span>
+      </div>
+
+      <div class="grid-3">
+        <div class="card-val"><div class="val-num" id="y">0</div><div class="val-lbl" id="lblY">বছর</div></div>
+        <div class="card-val"><div class="val-num" id="m">0</div><div class="val-lbl" id="lblM">মাস</div></div>
+        <div class="card-val"><div class="val-num" id="d">0</div><div class="val-lbl" id="lblD">দিন</div></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card-val"><div class="val-num-sub" id="hours">0</div><div class="val-lbl" id="lblHrs">ঘণ্টা</div></div>
+        <div class="card-val"><div class="val-num-sub" id="mins">0</div><div class="val-lbl" id="lblMins">মিনিট</div></div>
+        <div class="card-val"><div class="val-num-sub" id="secs">0</div><div class="val-lbl" id="lblSecs">সেকেন্ড</div></div>
+        <div class="card-val"><div class="val-num-sub" style="color: #ec4899;" id="ms">0</div><div class="val-lbl" id="lblMs">মিলিসেকেন্ড</div></div>
+      </div>
+
+      <div class="tab-buttons">
+        <button class="tab-btn active" onclick="switchTab('zodiac')" id="tab1Btn">রাশিচক্র</button>
+        <button class="tab-btn" onclick="switchTab('life')" id="tab2Btn">পরিসংখ্যান</button>
+        <button class="tab-btn" onclick="switchTab('planets')" id="tab3Btn">সৌরজগৎ</button>
+        <button class="tab-btn" onclick="switchTab('history')" id="tab4Btn">ঐতিহাসিক তুলনামূলক</button>
+      </div>
+
+      <!-- Tab 1 -->
+      <div class="tab-content active" id="tab-zodiac">
+        <div class="info-row"><span class="info-label" id="t1_1">জন্মের বার:</span><span class="info-value" id="bDayName">-</span></div>
+        <div class="info-row"><span class="info-label" id="t1_2">ওয়েস্টার্ন রাশি:</span><span class="info-value" id="wZodiac">-</span></div>
+        <div class="info-row"><span class="info-label" id="t1_3">চাইনিজ রাশি:</span><span class="info-value" id="cZodiac">-</span></div>
+        <div class="info-row"><span class="info-label" id="t1_4">পরবর্তী জন্মদিন:</span><span class="info-value" id="nextBday">-</span></div>
+      </div>
+
+      <!-- Tab 2 -->
+      <div class="tab-content" id="tab-life">
+        <div class="info-row"><span class="info-label" id="t2_1">মোট হৃদস্পন্দন:</span><span class="info-value" id="heartBeats">-</span></div>
+        <div class="info-row"><span class="info-label" id="t2_2">মোট নিশ্বাস:</span><span class="info-value" id="breaths">-</span></div>
+        <div class="info-row"><span class="info-label" id="t2_3">ঘুমিয়ে কাটিয়েছেন:</span><span class="info-value" id="sleepYears">-</span></div>
+      </div>
+
+      <!-- Tab 3 -->
+      <div class="tab-content" id="tab-planets">
+        <div class="info-row"><span class="info-label">বুধ গ্রহ (Mercury):</span><span class="info-value" id="pMercury">-</span></div>
+        <div class="info-row"><span class="info-label">শুক্র গ্রহ (Venus):</span><span class="info-value" id="pVenus">-</span></div>
+        <div class="info-row"><span class="info-label">মঙ্গল গ্রহ (Mars):</span><span class="info-value" id="pMars">-</span></div>
+        <div class="info-row"><span class="info-label">বৃহস্পতি গ্রহ (Jupiter):</span><span class="info-value" id="pJupiter">-</span></div>
+      </div>
+
+      <!-- Tab 4 -->
+      <div class="tab-content" id="tab-history">
+        <div class="info-row"><span class="info-label" id="h1">সূর্য প্রদক্ষিণ (কমপ্লিট):</span><span class="info-value" id="sunOrbits">-</span></div>
+        <div class="info-row"><span class="info-label" id="h2">চাঁদ প্রদক্ষিণ (আনুমানিক):</span><span class="info-value" id="moonOrbits">-</span></div>
+        <div class="info-row"><span class="info-label" id="h3">আলোর গতিতে দূরত্ব:</span><span class="info-value" id="lightDist">-</span></div>
+      </div>
+
+      <button class="btn-share" onclick="openShareModal()"><i class="fa-solid fa-share-nodes"></i> <span id="shareBtnText">শেয়ার করুন ও সার্টিফিকেট</span> ⚡</button>
+    </div>
+  </div>
+
+  <!-- 💎 SHARE & CERTIFICATE MODAL -->
+  <div class="modal-overlay" id="shareModal">
+    <div class="premium-photo-card">
+      <div class="card-icon-box"><i class="fa-solid fa-award"></i></div>
+      <h3 class="card-modal-title">ChronoPulse Certificate Card</h3>
+      <p class="card-modal-desc">আপনার বয়সের নিখুঁত হিসাব ও মাইলফলক সার্টিফিকেট কার্ড প্রস্তুত।</p>
+      
+      <div class="card-spec-grid">
+        <div class="spec-item"><div class="l">বয়স</div><div class="v" id="modalAge">-</div></div>
+        <div class="spec-item"><div class="l">রাশিচক্র</div><div class="v" id="modalZodiac">-</div></div>
+        <div class="spec-item"><div class="l">মোট দিন</div><div class="v" id="modalDays">-</div></div>
+        <div class="spec-item"><div class="l">সূর্য প্রদক্ষিণ</div><div class="v" id="modalOrbits">-</div></div>
+      </div>
+
+      <button class="btn-modal-main" onclick="executeShare()"><i class="fa-solid fa-paper-plane"></i> সোশ্যাল মিডিয়ায় শেয়ার ও কপি</button>
+      <button class="btn-modal-close" onclick="closeShareModal()">বন্ধ করুন</button>
+    </div>
+  </div>
+
+  <!-- 💎 SUCCESS NOTIFICATION MODAL -->
+  <div class="modal-overlay" id="successModal">
+    <div class="premium-photo-card">
+      <div class="card-icon-box" style="background: linear-gradient(135deg, #10b981, #3b82f6);"><i class="fa-solid fa-check"></i></div>
+      <h3 class="card-modal-title">সফলভাবে প্রস্তুত!</h3>
+      <p class="card-modal-desc">সার্টিফিকেট ও শেয়ার কার্ডের টেক্সট সফলভাবে কপি করা হয়েছে।</p>
+      
+      <button class="btn-modal-main" style="background: linear-gradient(90deg, #10b981, #38bdf8);" onclick="closeSuccessModal()">ঠিক আছে</button>
+    </div>
+  </div>
+
+  <script>
+    // PWA Service Worker Registration
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(() => console.log('PWA Service Worker Registered Successfully!'))
+          .catch(err => console.log('SW Registration Failed: ', err));
+      });
+    }
+
+    let timer = null;
+    let currentLang = 'bn';
+
+    const dict = {
+      bn: {
+        badge: "PWA Offline Mode Active",
+        title: "ChronoPulse Matrix",
+        sub: "নিখুঁত লাইভ বয়স এবং জ্যোতির্বিজ্ঞানভিত্তিক বিশ্লেষণ",
+        lblInput: "জন্ম তারিখ ও সময় দিন:",
+        btnText: "হিসাব শুরু করুন",
+        liveText: "রিয়েল-টাইম কাউন্টার চালু",
+        y: "বছর", m: "মাস", d: "দিন",
+        hrs: "ঘণ্টা", mins: "মিনিট", secs: "সেকেন্ড", ms: "মিলিসেকেন্ড",
+        t1: "রাশিচক্র", t2: "পরিসংখ্যান", t3: "সৌরজগৎ", t4: "ঐতিহাসিক তুলনামূলক",
+        bDay: "জন্মের বার:", wZod: "ওয়েস্টার্ন রাশি:", cZod: "চাইনিজ রাশি:", nextB: "পরবর্তী জন্মদিন:",
+        hb: "মোট হৃদস্পন্দন:", breath: "মোট নিশ্বাস:", sleep: "ঘুমিয়ে কাটিয়েছেন:",
+        sunO: "সূর্য প্রদক্ষিণ (কমপ্লিট):", moonO: "চাঁদ প্রদক্ষিণ (আনুমানিক):", lightD: "আলোর গতিতে দূরত্ব:",
+        shareTxt: "শেয়ার করুন ও সার্টিফিকেট"
+      },
+      en: {
+        badge: "PWA Offline Mode Active",
+        title: "ChronoPulse Matrix",
+        sub: "Precise Live Age & Astronomical Analysis",
+        lblInput: "Select Birth Date & Time:",
+        btnText: "Start Calculation",
+        liveText: "Real-time Counter Active",
+        y: "Years", m: "Months", d: "Days",
+        hrs: "Hours", mins: "Minutes", secs: "Seconds", ms: "Milliseconds",
+        t1: "Zodiac", t2: "Statistics", t3: "Solar System", t4: "Historical Milestones",
+        bDay: "Birth Day:", wZod: "Western Zodiac:", cZod: "Chinese Zodiac:", nextB: "Next Birthday:",
+        hb: "Total Heartbeats:", breath: "Total Breaths:", sleep: "Time Spent Sleeping:",
+        sunO: "Solar Orbits (Completed):", moonO: "Lunar Orbits (Approx):", lightD: "Light-speed Distance:",
+        shareTxt: "Share & Certificate"
+      }
+    };
+
+    function setTheme(theme) {
+      document.body.className = `theme-${theme}`;
+    }
+
+    function toggleLanguage() {
+      currentLang = currentLang === 'bn' ? 'en' : 'bn';
+      const d = dict[currentLang];
+      document.getElementById('badgeText').innerText = d.badge;
+      document.getElementById('appTitle').innerText = d.title;
+      document.getElementById('appSub').innerText = d.sub;
+      document.getElementById('lblInput').innerHTML = `<i class="fa-regular fa-calendar-days"></i> ${d.lblInput}`;
+      document.getElementById('btnText').innerText = d.btnText;
+      document.getElementById('liveText').innerText = d.liveText;
+      document.getElementById('lblY').innerText = d.y;
+      document.getElementById('lblM').innerText = d.m;
+      document.getElementById('lblD').innerText = d.d;
+      document.getElementById('lblHrs').innerText = d.hrs;
+      document.getElementById('lblMins').innerText = d.mins;
+      document.getElementById('lblSecs').innerText = d.secs;
+      document.getElementById('lblMs').innerText = d.ms;
+      document.getElementById('tab1Btn').innerText = d.t1;
+      document.getElementById('tab2Btn').innerText = d.t2;
+      document.getElementById('tab3Btn').innerText = d.t3;
+      document.getElementById('tab4Btn').innerText = d.t4;
+      document.getElementById('t1_1').innerText = d.bDay;
+      document.getElementById('t1_2').innerText = d.wZod;
+      document.getElementById('t1_3').innerText = d.cZod;
+      document.getElementById('t1_4').innerText = d.nextB;
+      document.getElementById('t2_1').innerText = d.hb;
+      document.getElementById('t2_2').innerText = d.breath;
+      document.getElementById('t2_3').innerText = d.sleep;
+      document.getElementById('h1').innerText = d.sunO;
+      document.getElementById('h2').innerText = d.moonO;
+      document.getElementById('h3').innerText = d.lightD;
+      document.getElementById('shareBtnText').innerText = d.shareTxt;
+    }
+
+    function runApp() {
+      const val = document.getElementById('dobInput').value;
+      const err = document.getElementById('errorMsg');
+      const res = document.getElementById('resSection');
+
+      if (!val) { err.style.display = 'block'; res.style.display = 'none'; return; }
+      const dob = new Date(val);
+      const now = new Date();
+      if (dob > now) { 
+        err.innerText = currentLang === 'bn' ? "ভবিষ্যতের তারিখ গ্রহণযোগ্য নয়!" : "Future dates not allowed!";
+        err.style.display = 'block'; res.style.display = 'none'; return; 
+      }
+
+      err.style.display = 'none';
+      res.style.display = 'flex';
+
+      if (dob.getDate() === now.getDate() && dob.getMonth() === now.getMonth()) {
+        if (typeof confetti === 'function') {
+          confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
+        }
+      } else {
+        if (typeof confetti === 'function') {
+          confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
+        }
+      }
+
+      if (timer) clearInterval(timer);
+      calcBasic(dob);
+      timer = setInterval(() => calcLive(dob), 50);
+    }
+
+    function calcBasic(dob) {
+      const now = new Date();
+      let y = now.getFullYear() - dob.getFullYear();
+      let m = now.getMonth() - dob.getMonth();
+      let d = now.getDate() - dob.getDate();
+      if (d < 0) { m--; d += new Date(now.getFullYear(), now.getMonth(), 0).getDate(); }
+      if (m < 0) { y--; m += 12; }
+
+      document.getElementById('y').innerText = y;
+      document.getElementById('m').innerText = m;
+      document.getElementById('d').innerText = d;
+
+      const daysBn = ["রবিবার", "সোমবার", "মঙ্গলবার", "বুধবার", "বৃহস্পতিবার", "শুক্রবার", "শনিবার"];
+      const daysEn = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      document.getElementById('bDayName').innerText = currentLang === 'bn' ? daysBn[dob.getDay()] : daysEn[dob.getDay()];
+      
+      const wZod = getWesternZodiac(dob.getDate(), dob.getMonth() + 1);
+      document.getElementById('wZodiac').innerText = wZod;
+      document.getElementById('cZodiac').innerText = getChineseZodiac(dob.getFullYear());
+
+      let next = new Date(now.getFullYear(), dob.getMonth(), dob.getDate());
+      if (now > next) next.setFullYear(now.getFullYear() + 1);
+      const diff = Math.ceil((next - now) / (1000 * 60 * 60 * 24));
+      document.getElementById('nextBday').innerText = `${diff} ${currentLang === 'bn' ? 'দিন বাকি' : 'days left'}`;
+
+      const totalDays = Math.floor((now - dob) / (1000 * 60 * 60 * 24));
+      const ageYr = (now - dob) / (1000 * 60 * 60 * 24 * 365.25);
+
+      document.getElementById('sunOrbits').innerText = (ageYr / 1).toFixed(2) + (currentLang === 'bn' ? ' বার' : ' Orbits');
+      document.getElementById('moonOrbits').innerText = Math.floor(totalDays / 29.5) + (currentLang === 'bn' ? ' বার' : ' Cycles');
+      document.getElementById('lightDist').innerText = (ageYr * 9.461e12).toExponential(2) + " km";
+
+      document.getElementById('modalAge').innerText = `${y}y ${m}m`;
+      document.getElementById('modalZodiac').innerText = wZod.split(' ')[0];
+      document.getElementById('modalDays').innerText = totalDays.toLocaleString() + (currentLang === 'bn' ? ' দিন' : ' Days');
+      document.getElementById('modalOrbits').innerText = (ageYr / 1).toFixed(1) + (currentLang === 'bn' ? ' বার' : ' Orbits');
+
+      document.getElementById('pMercury').innerText = (ageYr / 0.24).toFixed(1) + (currentLang === 'bn' ? ' বছর' : ' Years');
+      document.getElementById('pVenus').innerText = (ageYr / 0.62).toFixed(1) + (currentLang === 'bn' ? ' বছর' : ' Years');
+      document.getElementById('pMars').innerText = (ageYr / 1.88).toFixed(1) + (currentLang === 'bn' ? ' বছর' : ' Years');
+      document.getElementById('pJupiter').innerText = (ageYr / 11.86).toFixed(1) + (currentLang === 'bn' ? ' বছর' : ' Years');
+    }
+
+    function calcLive(dob) {
+      const now = new Date();
+      const diffMs = now - dob;
+      const hrs = Math.floor(diffMs / (1000 * 60 * 60));
+      const mins = Math.floor(diffMs / (1000 * 60));
+      const secs = Math.floor(diffMs / 1000);
+      const ms = Math.floor((diffMs % 1000) / 10);
+
+      document.getElementById('hours').innerText = hrs.toLocaleString();
+      document.getElementById('mins').innerText = mins.toLocaleString();
+      document.getElementById('secs').innerText = secs.toLocaleString();
+      document.getElementById('ms').innerText = ms;
+
+      document.getElementById('heartBeats').innerText = Math.floor(mins * 72).toLocaleString() + (currentLang === 'bn' ? ' বার' : ' beats');
+      document.getElementById('breaths').innerText = Math.floor(mins * 16).toLocaleString() + (currentLang === 'bn' ? ' বার' : ' breaths');
+      document.getElementById('sleepYears').innerText = ((diffMs / (1000 * 60 * 60 * 24 * 365.25)) / 3).toFixed(1) + (currentLang === 'bn' ? ' বছর' : ' Years');
+    }
+
+    function switchTab(name) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+      document.getElementById(`tab-${name}`).classList.add('active');
+    }
+
+    function getWesternZodiac(d, m) {
+      if ((m == 1 && d >= 20) || (m == 2 && d <= 18)) return "কুম্ভ (Aquarius)";
+      if ((m == 2 && d >= 19) || (m == 3 && d <= 20)) return "মীন (Pisces)";
+      if ((m == 3 && d >= 21) || (m == 4 && d <= 19)) return "মেষ (Aries)";
+      if ((m == 4 && d >= 20) || (m == 5 && d <= 20)) return "বৃষ (Taurus)";
+      if ((m == 5 && d >= 21) || (m == 6 && d <= 20)) return "মিথুন (Gemini)";
+      if ((m == 6 && d >= 21) || (m == 7 && d <= 22)) return "কর্কট (Cancer)";
+      if ((m == 7 && d >= 23) || (m == 8 && d <= 22)) return "সিংহ (Leo)";
+      if ((m == 8 && d >= 23) || (m == 9 && d <= 22)) return "কন্যা (Virgo)";
+      if ((m == 9 && d >= 23) || (m == 10 && d <= 22)) return "তুলা (Libra)";
+      if ((m == 10 && d >= 23) || (m == 11 && d <= 21)) return "বৃশ্চিক (Scorpio)";
+      if ((m == 11 && d >= 22) || (m == 12 && d <= 21)) return "ধনু (Sagittarius)";
+      return "মকর (Capricorn)";
+    }
+
+    function getChineseZodiac(y) {
+      const animals = ["ইঁদুর (Rat)", "ষাঁড় (Ox)", "বাঘ (Tiger)", "খরগোশ (Rabbit)", "ড্রাগন (Dragon)", "সাপ (Snake)", "ঘোড়া (Horse)", "ভেড়া (Goat)", "বানর (Monkey)", "মোরগ (Rooster)", "কুকুর (Dog)", "শূকর (Pig)"];
+      return animals[(y - 4) % 12];
+    }
+
+    function openShareModal() { document.getElementById('shareModal').classList.add('active'); }
+    function closeShareModal() { document.getElementById('shareModal').classList.remove('active'); }
+
+    function executeShare() {
+      const y = document.getElementById('y').innerText;
+      const m = document.getElementById('m').innerText;
+      const d = document.getElementById('d').innerText;
+      const z = document.getElementById('wZodiac').innerText;
+      
+      const shareText = `✨ ChronoPulse Age Certificate Card:\nAge: ${y} Years ${m} Months ${d} Days\nZodiac: ${z}\n🚀 Verified via ChronoPulse Software`;
+      
+      navigator.clipboard.writeText(shareText);
+      document.getElementById('shareModal').classList.remove('active');
+      document.getElementById('successModal').classList.add('active');
+    }
+
+    function closeSuccessModal() { document.getElementById('successModal').classList.remove('active'); }
+  </script>
+</body>
+</html>

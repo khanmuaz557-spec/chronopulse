@@ -1,15 +1,13 @@
 {
-  "name": "ChronoPulse Matrix",
-  "short_name": "ChronoPulse",
-  "start_url": "./index.html",
+  "background_color": "#ffffff",
+  "dir": "ltr",
   "display": "standalone",
-  "background_color": "#030712",
-  "theme_color": "#38bdf8",
-  "icons": [
-    {
-      "src": "https://cdn-icons-png.flaticon.com/512/3652/3652191.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ]
+  "name": "UA age calculator",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "UA age calculator",
+  "start_url": "/",
+  "theme_color": "#ffffff",
+  "id": "/u/age-calculator/",
+  "description": "A simple and fast age calculator application."
 }
